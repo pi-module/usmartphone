@@ -74,11 +74,7 @@ class IndexController extends ActionController
     {
         $id = $this->params('id', '');
 
-        $return = array(
-            'check'     => 0,
-            'uid'       => 0,
-            'sessionid' => '',
-        );
+        $return = array();
 
         if (!empty($id)) {
         	Pi::service('session')->regenerateId($id);
@@ -88,6 +84,12 @@ class IndexController extends ActionController
             $return = array(
                 'check'     => 1,
                 'uid'       => Pi::user()->getId(),
+                'sessionid' => Pi::service('session')->getId(),
+            );
+        } else {
+            $return = array(
+                'check'     => 0,
+                'uid'       => 0,
                 'sessionid' => Pi::service('session')->getId(),
             );
         }
