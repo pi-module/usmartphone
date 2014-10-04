@@ -21,20 +21,20 @@ class IndexController extends ActionController
 {
     public function loginAction()
     {
-    	$return = array(
-	        'message'   => '',
-	    	'login'     => 0,
-	    	'identity'  => '',
-	    	'userid'    => 0,
-	    	'sessionid' => '',
-    	);
+        $return = array(
+            'message'   => '',
+            'login'     => 0,
+            'identity'  => '',
+            'userid'    => 0,
+            'sessionid' => '',
+        );
             
         if (!$this->request->isPost()) {
-	        $return['message'] = __('Invalid input please try again');
-	    } else {
-		    $post = $this->request->getPost();
-		    $identity = $post['identity'];
-		    $credential = $post['credential'];
+            $return['message'] = __('Invalid input please try again');
+        } else {
+            $post = $this->request->getPost();
+            $identity = $post['identity'];
+            $credential = $post['credential'];
             $result = Pi::service('authentication')->authenticate($identity, $credential);
             $result = $this->verifyResult($result);
             if ($result->isValid()) {
@@ -49,9 +49,9 @@ class IndexController extends ActionController
             } else {
                 $return['message'] = __('Invalid input please try again');
             }
-	    }
-	    echo Json::encode($return);
-		exit;
+        }
+        echo Json::encode($return);
+        exit;
     }
 
     public function logoutAction()
@@ -77,7 +77,7 @@ class IndexController extends ActionController
         $return = array();
 
         if (!empty($id)) {
-        	Pi::service('session')->regenerateId($id);
+            Pi::service('session')->regenerateId($id);
         }
 
         if (Pi::service('user')->hasIdentity()) {
@@ -97,5 +97,10 @@ class IndexController extends ActionController
         $this->view()->setTemplate(false)->setLayout('layout-content');
         echo Json::encode($return);
         exit;
+    }
+
+    protected function verifyResult(Result $result)
+    {
+        return $result;
     }
 }
