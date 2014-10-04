@@ -30,5 +30,6 @@ return array(
     // Resource
     'resource' => array(
         'config'        => 'config.php',
+        'route'         => 'route.php',
     ),
 );
