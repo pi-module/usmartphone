@@ -125,8 +125,14 @@ class IndexController extends ActionController
                 // Start session
                 $session = Pi::model('session')->find($id);
                 if ($session) {
+                    // Old method for pi 2.4.0
+                    /* 
                     session_id($id);
                     Pi::service('session')->manager()->start();
+                    */
+                    // New method for pi 2.5.0
+                    $session = $session->toArray();
+                    Pi::service('session')->manager()->start(false, $session['id']);
                 }
             }
             // Check user has identity
