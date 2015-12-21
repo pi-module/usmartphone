@@ -24,8 +24,11 @@ For each action like make vote and ... you need check user is login or not , if 
 
 , After check , result is JSON array by : 
 * `check` : 0 or 1 , if user be login return 1
-* `uid` : user id
 * `identity` : user identity ( username )
+* `email` : user email
+* `name` : display name
+* `avatar` : avatar image url
+* `uid` : user id
 * `sessionid` : user session id, you need keep it on your app and use it on check method
 
 On send request , you need set COOKIE on send request header by this strucher : `pisess=SessionID` , you can use code like this on your android app
