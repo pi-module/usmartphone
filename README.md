@@ -10,7 +10,10 @@ for do login , make login form on your app and get user `identity` and `credenti
 * `message` : website message
 * `login` : 0 or 1 , if user login true , return 1
 * `identity` : user identity ( username )
-* `userid` : user id
+* `email` : user email
+* `name` : display name
+* `avatar` : avatar image url
+* `uid` : user id
 * `sessionid` : user session id, you need keep it on your app and use it on check method
 
 #### Logout
@@ -34,7 +37,7 @@ For example
 ```
 request.setHeader("Cookie", "pisess=91a474474432998b9073d11c6da0e86e");
 ```
-And usrl is :
+And url is :
 ```
 http://www.YOURSITE.com/usmartphone/check/91a474474432998b9073d11c6da0e86e
 ```

@@ -82,11 +82,18 @@ class IndexController extends ActionController
                         );
                         Pi::service('event')->trigger('user_login', $args);
                         // Get user information
-                        $user = Pi::model('user_account')->find($uid)->toArray();
+                        //$user = Pi::model('user_account')->find($uid)->toArray();
+                        $user = Pi::user()->get($uid, array(
+                            'id', 'identity', 'name', 'email'
+                        ));
                         // Set return array
                         $return['message'] = __('You have logged in successfully');
                         $return['login'] = 1;
                         $return['identity'] = $user['identity'];
+                        $return['email'] = $user['email'];
+                        $return['name'] = $user['name'];
+                        $return['avatar'] = Pi::service('user')->avatar($user['id'], 'medium', false);
+                        $return['uid'] = $user['id'];
                         $return['userid'] = $user['id'];
                         $return['sessionid'] = Pi::service('session')->getId();
                     } else {
@@ -143,10 +150,18 @@ class IndexController extends ActionController
             }
             // Check user has identity
             if (Pi::service('user')->hasIdentity()) {
+                // Get user
+                $user = Pi::user()->get(Pi::user()->getId(), array(
+                    'id', 'identity', 'name', 'email'
+                ));
+                // Set result
                 $return = array(
                     'check' => 1,
-                    'uid' => Pi::user()->getId(),
-                    'identity' => Pi::user()->getIdentity(),
+                    'uid' => $user['id'],
+                    'identity' => $user['identity'],
+                    'email' => $user['email'],
+                    'name' => $user['name'],
+                    'avatar' => Pi::service('user')->avatar($user['id'], 'medium', false),
                     'sessionid' => Pi::service('session')->getId(),
                 );
             } else {
@@ -154,6 +169,9 @@ class IndexController extends ActionController
                     'check' => 0,
                     'uid' => Pi::user()->getId(),
                     'identity' => Pi::user()->getIdentity(),
+                    'email' => '',
+                    'name' => '',
+                    'avatar' => '',
                     'sessionid' => Pi::service('session')->getId(),
                 );
             }
@@ -163,6 +181,9 @@ class IndexController extends ActionController
                 'check' => 0,
                 'uid' => 0,
                 'identity' => '',
+                'email' => '',
+                'name' => '',
+                'avatar' => '',
                 'sessionid' => '',
             );
         }
