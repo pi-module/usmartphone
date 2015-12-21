@@ -37,6 +37,10 @@ class IndexController extends ActionController
             'message' => '',
             'login' => 0,
             'identity' => '',
+            'email' => '',
+            'name' => '',
+            'avatar' => '',
+            'uid' => 0,
             'userid' => 0,
             'sessionid' => '',
         );
