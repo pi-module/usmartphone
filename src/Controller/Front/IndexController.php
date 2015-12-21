@@ -15,7 +15,6 @@ namespace Module\Usmartphone\Controller\Front;
 use Pi;
 use Pi\Mvc\Controller\ActionController;
 use Pi\Authentication\Result;
-use Zend\Json\Json;
 
 class IndexController extends ActionController
 {
@@ -23,23 +22,22 @@ class IndexController extends ActionController
     {
         // Set return array
         $return = array(
-            'active'    => $this->config('active_login'),
-            'message'   => '',
+            'active' => $this->config('active_login'),
+            'message' => '',
         );
         // json output
         $this->view()->setTemplate(false)->setLayout('layout-content');
-        echo Json::encode($return);
-        exit;
+        return $return;
     }
 
     public function loginAction()
     {
         // Set return array
         $return = array(
-            'message'   => '',
-            'login'     => 0,
-            'identity'  => '',
-            'userid'    => 0,
+            'message' => '',
+            'login' => 0,
+            'identity' => '',
+            'userid' => 0,
             'sessionid' => '',
         );
         // Check user login from allowed or not
@@ -52,12 +50,22 @@ class IndexController extends ActionController
                 $post = $this->request->getPost();
                 $identity = $post['identity'];
                 $credential = $post['credential'];
+                // Set field
+                $field = 'identity';
+                if (Pi::service('module')->isActive('user')) {
+                    $config = Pi::service('registry')->config->read('user');
+                    $field = $config['login_field'];
+                }
                 // Try login
-                $result = Pi::service('authentication')->authenticate($identity, $credential);
+                $result = Pi::service('authentication')->authenticate(
+                    $identity,
+                    $credential,
+                    $field
+                );
                 $result = $this->verifyResult($result);
                 // Check login is valid
                 if ($result->isValid()) {
-                    $uid = (int) $result->getData('id');
+                    $uid = (int)$result->getData('id');
                     // Bind user information
                     if (Pi::service('user')->bind($uid)) {
                         Pi::service('session')->setUser($uid);
@@ -69,18 +77,18 @@ class IndexController extends ActionController
                         }
                         // Set user login event
                         $args = array(
-                            'uid'           => $uid,
+                            'uid' => $uid,
                             'remember_time' => $rememberMe,
                         );
                         Pi::service('event')->trigger('user_login', $args);
                         // Get user information
                         $user = Pi::model('user_account')->find($uid)->toArray();
                         // Set return array
-                        $return['message']    = __('You have logged in successfully');
-                        $return['login']      = 1;
-                        $return['identity']   = $user['identity'];
-                        $return['userid']     = $user['id'];
-                        $return['sessionid']  = Pi::service('session')->getId();
+                        $return['message'] = __('You have logged in successfully');
+                        $return['login'] = 1;
+                        $return['identity'] = $user['identity'];
+                        $return['userid'] = $user['id'];
+                        $return['sessionid'] = Pi::service('session')->getId();
                     } else {
                         $return['message'] = __('Bind error');
                     }
@@ -91,8 +99,7 @@ class IndexController extends ActionController
         }
         // json output
         $this->view()->setTemplate(false)->setLayout('layout-content');
-        echo Json::encode($return);
-        exit;
+        return $return;
     }
 
     public function logoutAction()
@@ -105,13 +112,12 @@ class IndexController extends ActionController
         Pi::service('event')->trigger('logout', $uid);
         // Set retrun array
         $return = array(
-            'message'   => __('You logged out successfully.'),
-            'logout'    => 1,
+            'message' => __('You logged out successfully.'),
+            'logout' => 1,
         );
         // json output
         $this->view()->setTemplate(false)->setLayout('layout-content');
-        echo Json::encode($return);
-        exit;
+        return $return;
     }
 
     public function checkAction()
@@ -138,32 +144,31 @@ class IndexController extends ActionController
             // Check user has identity
             if (Pi::service('user')->hasIdentity()) {
                 $return = array(
-                    'check'     => 1,
-                    'uid'       => Pi::user()->getId(),
-                    'identity'  => Pi::user()->getIdentity(),
+                    'check' => 1,
+                    'uid' => Pi::user()->getId(),
+                    'identity' => Pi::user()->getIdentity(),
                     'sessionid' => Pi::service('session')->getId(),
                 );
             } else {
                 $return = array(
-                    'check'     => 0,
-                    'uid'       => Pi::user()->getId(),
-                    'identity'  => Pi::user()->getIdentity(),
+                    'check' => 0,
+                    'uid' => Pi::user()->getId(),
+                    'identity' => Pi::user()->getIdentity(),
                     'sessionid' => Pi::service('session')->getId(),
                 );
             }
         } else {
             // Set empty return
             $return = array(
-                'check'     => 0,
-                'uid'       => 0,
-                'identity'  => '',
+                'check' => 0,
+                'uid' => 0,
+                'identity' => '',
                 'sessionid' => '',
             );
         }
         // json output
         $this->view()->setTemplate(false)->setLayout('layout-content');
-        echo Json::encode($return);
-        exit;
+        return $return;
     }
 
     protected function verifyResult(Result $result)

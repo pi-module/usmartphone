@@ -11,13 +11,5 @@
  * @author Hossein Azizabadi <azizabadi@faragostaresh.com>
  */
 return array(
-    'item' => array(
-        'active_login' => array(
-            'title' => _a('Active login by mobile app'),
-            'description' => '',
-            'edit' => 'checkbox',
-            'filter' => 'number_int',
-            'value' => 1
-        ),
-    ),
+    'front' => false,
 );

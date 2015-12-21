@@ -11,25 +11,26 @@
  * @author Hossein Azizabadi <azizabadi@faragostaresh.com>
  */
 return array(
-    'meta'  => array(
-        'title'         => _a('Smartphone login'),
-        'description'   => _a('Smartphone app login on website'),
-        'version'       => '0.0.1',
-        'license'       => 'New BSD',
-        'demo'          => 'http://demo.pialog.org',
-        'icon'          => 'fa-mobile',
+    'meta' => array(
+        'title' => _a('Smartphone login'),
+        'description' => _a('Smartphone app login on website'),
+        'version' => '0.0.2',
+        'license' => 'New BSD',
+        'demo' => 'http://demo.pialog.org',
+        'icon' => 'fa-mobile',
     ),
     // Author information
-    'author'    => array(
+    'author' => array(
         // Author full name, required
-        'Dev'       => 'Hossein Azizabadi',
+        'Dev' => 'Hossein Azizabadi',
         // Email address, optional
-        'Email'     => 'azizabadi@faragostaresh.com',
+        'Email' => 'azizabadi@faragostaresh.com',
     ),
 
     // Resource
     'resource' => array(
-        'config'        => 'config.php',
-        'route'         => 'route.php',
+        'config' => 'config.php',
+        'route' => 'route.php',
+        'navigation' => 'navigation.php',
     ),
 );

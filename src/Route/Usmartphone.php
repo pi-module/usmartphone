@@ -22,9 +22,9 @@ class Usmartphone extends Standard
      * @var array
      */
     protected $defaults = array(
-        'module'        => 'usmartphone',
-        'controller'    => 'index',
-        'action'        => 'index'
+        'module' => 'usmartphone',
+        'controller' => 'index',
+        'action' => 'index'
     );
 
     protected $actionList = array(
@@ -52,8 +52,8 @@ class Usmartphone extends Standard
         if (in_array($parts[0], $this->actionList)) {
             $matches['action'] = $parts[0];
             // get id
-            if (isset($parts[1]) 
-                && !empty($parts[1]) 
+            if (isset($parts[1])
+                && !empty($parts[1])
                 && $parts[0] == 'check'
             ) {
                 $matches['id'] = urldecode($parts[1]);
@@ -74,12 +74,13 @@ class Usmartphone extends Standard
     public function assemble(
         array $params = array(),
         array $options = array()
-    ) {
+    )
+    {
         $mergedParams = array_merge($this->defaults, $params);
         if (!$mergedParams) {
             return $this->prefix;
         }
-        
+
         // Set module
         if (!empty($mergedParams['module'])) {
             $url['module'] = $mergedParams['module'];

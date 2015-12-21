@@ -13,14 +13,14 @@
 return array(
     // route name
     'usmartphone' => array(
-        'name'     => 'usmartphone',
-        'type'     => 'Module\Usmartphone\Route\Usmartphone',
-        'options'  => array(
-            'route'    => '/usmartphone',
+        'name' => 'usmartphone',
+        'type' => 'Module\Usmartphone\Route\Usmartphone',
+        'options' => array(
+            'route' => '/usmartphone',
             'defaults' => array(
-                'module'      => 'usmartphone',
-                'controller'  => 'index',
-                'action'      => 'index'
+                'module' => 'usmartphone',
+                'controller' => 'index',
+                'action' => 'index'
             )
         ),
     )
