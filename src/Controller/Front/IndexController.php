@@ -172,7 +172,7 @@ class IndexController extends ActionController
                     'identity' => $user['identity'],
                     'email' => $user['email'],
                     'name' => $user['name'],
-                    'avatar' => Pi::service('user')->avatar($user['id'], 'medium', false),
+                    'avatar' => Pi::service('user')->avatar($user['id'], 'large', false),
                     'sessionid' => Pi::service('session')->getId(),
                 );
             } else {
