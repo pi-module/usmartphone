@@ -28,7 +28,7 @@ class Usmartphone extends Standard
     );
 
     protected $actionList = array(
-        'index', 'login', 'logout', 'check'
+        'index', 'login', 'logout', 'check', 'profile'
     );
 
     /**

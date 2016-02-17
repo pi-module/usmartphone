@@ -206,6 +206,23 @@ class IndexController extends ActionController
         return $return;
     }
 
+    public function profileAction()
+    {
+        if (Pi::service('user')->hasIdentity()) {
+            // Find user
+            $uid = Pi::user()->getId();
+            $user = Pi::user()->get($uid, array('id', 'identity', 'name', 'email'));
+            $user['avatar'] = Pi::service('avatar')->get($user['id'], 'large', false);
+        } else {
+            $this->getResponse()->setStatusCode(401);
+            $this->terminate(__('Please login to get profile info'), '', 'error-denied');
+            $this->view()->setLayout('layout-simple');
+            return;
+        }
+        // json output
+        return $user;
+    }
+
     protected function verifyResult(Result $result)
     {
         return $result;
