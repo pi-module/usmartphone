@@ -48,7 +48,10 @@ class IndexController extends ActionController
         if ($this->config('active_login')) {
             // Check post array set or not
             if (!$this->request->isPost()) {
-                $return['message'] = __('Invalid input please try again');
+                $this->getResponse()->setStatusCode(401);
+                $this->terminate(__('Invalid input please try again'), '', 'error-denied');
+                $this->view()->setLayout('layout-simple');
+                return;
             } else {
                 // Get from post
                 $post = $this->request->getPost();
@@ -101,15 +104,20 @@ class IndexController extends ActionController
                         $return['userid'] = $user['id'];
                         $return['sessionid'] = Pi::service('session')->getId();
                     } else {
-                        $return['message'] = __('Bind error');
+                        $this->getResponse()->setStatusCode(401);
+                        $this->terminate(__('Bind error'), '', 'error-denied');
+                        $this->view()->setLayout('layout-simple');
+                        return;
                     }
                 } else {
-                    $return['message'] = __('Invalid input please try again');
+                    $this->getResponse()->setStatusCode(401);
+                    $this->terminate(__('Invalid input please try again'), '', 'error-denied');
+                    $this->view()->setLayout('layout-simple');
+                    return;
                 }
             }
         }
         // json output
-        $this->view()->setTemplate(false)->setLayout('layout-content');
         return $return;
     }
 
@@ -127,7 +135,6 @@ class IndexController extends ActionController
             'logout' => 1,
         );
         // json output
-        $this->view()->setTemplate(false)->setLayout('layout-content');
         return $return;
     }
 
@@ -181,7 +188,7 @@ class IndexController extends ActionController
             }
         } else {
             // Set empty return
-            $return = array(
+            /* $return = array(
                 'check' => 0,
                 'uid' => 0,
                 'identity' => '',
@@ -189,10 +196,13 @@ class IndexController extends ActionController
                 'name' => '',
                 'avatar' => '',
                 'sessionid' => '',
-            );
+            ); */
+            $this->getResponse()->setStatusCode(401);
+            $this->terminate(__('Login not active'), '', 'error-denied');
+            $this->view()->setLayout('layout-simple');
+            return;
         }
         // json output
-        $this->view()->setTemplate(false)->setLayout('layout-content');
         return $return;
     }
 
