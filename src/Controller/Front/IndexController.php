@@ -13,8 +13,8 @@
 namespace Module\Usmartphone\Controller\Front;
 
 use Pi;
-use Pi\Mvc\Controller\ActionController;
 use Pi\Authentication\Result;
+use Pi\Mvc\Controller\ActionController;
 
 class IndexController extends ActionController
 {
@@ -32,24 +32,25 @@ class IndexController extends ActionController
 
     public function loginAction()
     {
-        // Set return array
-        $return = array(
-            'message' => '',
-            'login' => 0,
-            'identity' => '',
-            'email' => '',
-            'name' => '',
-            'avatar' => '',
-            'uid' => 0,
-            'userid' => 0,
-            'sessionid' => '',
-        );
+        // json output
+        $this->view()->setTemplate(false)->setLayout('layout-content');
+
+        // Check if already logged in
+        if (Pi::service('user')->hasIdentity()) {
+            $this->getResponse()->setStatusCode(401);
+            $this->terminate(__('You are login before'), '', 'error-denied');
+            $this->view()->setLayout('layout-simple');
+            return;
+        }
+
+
+
         // Check user login from allowed or not
         if ($this->config('active_login')) {
             // Check post array set or not
             if (!$this->request->isPost()) {
                 $this->getResponse()->setStatusCode(401);
-                $this->terminate(__('Invalid input please try again'), '', 'error-denied');
+                $this->terminate(__('Invalid input please try again 1'), '', 'error-denied');
                 $this->view()->setLayout('layout-simple');
                 return;
             } else {
@@ -57,65 +58,21 @@ class IndexController extends ActionController
                 $post = $this->request->getPost();
                 $identity = $post['identity'];
                 $credential = $post['credential'];
-                // Set field
-                $field = 'identity';
-                if (Pi::service('module')->isActive('user')) {
-                    $config = Pi::service('registry')->config->read('user');
-                    $field = $config['login_field'];
-                }
-                // Try login
-                $result = Pi::service('authentication')->authenticate(
-                    $identity,
-                    $credential,
-                    $field
-                );
-                $result = $this->verifyResult($result);
-                // Check login is valid
-                if ($result->isValid()) {
-                    $uid = (int)$result->getData('id');
-                    // Bind user information
-                    if (Pi::service('user')->bind($uid)) {
-                        Pi::service('session')->setUser($uid);
-                        $rememberMe = 14 * 86400;
-                        Pi::service('session')->manager()->rememberme($rememberMe);
-                        // Unset login session
-                        if (isset($_SESSION['PI_LOGIN'])) {
-                            unset($_SESSION['PI_LOGIN']);
-                        }
-                        // Set user login event
-                        $args = array(
-                            'uid' => $uid,
-                            'remember_time' => $rememberMe,
-                        );
-                        Pi::service('event')->trigger('user_login', $args);
-                        // Get user information
-                        //$user = Pi::model('user_account')->find($uid)->toArray();
-                        $user = Pi::user()->get($uid, array(
-                            'id', 'identity', 'name', 'email'
-                        ));
-                        // Set return array
-                        $return['message'] = __('You have logged in successfully');
-                        $return['login'] = 1;
-                        $return['identity'] = $user['identity'];
-                        $return['email'] = $user['email'];
-                        $return['name'] = $user['name'];
-                        $return['avatar'] = Pi::service('user')->avatar($user['id'], 'medium', false);
-                        $return['uid'] = $user['id'];
-                        $return['userid'] = $user['id'];
-                        $return['sessionid'] = Pi::service('session')->getId();
-                    } else {
-                        $this->getResponse()->setStatusCode(401);
-                        $this->terminate(__('Bind error'), '', 'error-denied');
-                        $this->view()->setLayout('layout-simple');
-                        return;
-                    }
-                } else {
+                // Do login
+                $return = $this->doLogin($identity, $credential);
+                //Check error
+                if ($return['error'] == 1) {
                     $this->getResponse()->setStatusCode(401);
-                    $this->terminate(__('Invalid input please try again'), '', 'error-denied');
+                    $this->terminate($return['message'], '', 'error-denied');
                     $this->view()->setLayout('layout-simple');
                     return;
                 }
             }
+        } else {
+            $this->getResponse()->setStatusCode(401);
+            $this->terminate(__('Login is not active'), '', 'error-denied');
+            $this->view()->setLayout('layout-simple');
+            return;
         }
         // json output
         return $return;
@@ -221,6 +178,83 @@ class IndexController extends ActionController
         }
         // json output
         return $user;
+    }
+
+    public function doLogin($identity, $credential)
+    {
+        // Set return array
+        $return = array(
+            'message' => '',
+            'login' => 0,
+            'identity' => '',
+            'email' => '',
+            'name' => '',
+            'avatar' => '',
+            'uid' => 0,
+            'userid' => 0,
+            'sessionid' => '',
+            'error' => 0,
+        );
+        
+        // Set field
+        $field = 'identity';
+        if (Pi::service('module')->isActive('user')) {
+            $config = Pi::service('registry')->config->read('user');
+            $field = $config['login_field'];
+            $field = array_shift($field);
+        }
+
+        // try login
+        $result = Pi::service('authentication')->authenticate(
+            $identity,
+            $credential,
+            $field
+        );
+        $result = $this->verifyResult($result);
+
+        // Check login is valid
+        if ($result->isValid()) {
+            $uid = (int)$result->getData('id');
+            // Bind user information
+            if (Pi::service('user')->bind($uid)) {
+                Pi::service('session')->setUser($uid);
+                $rememberMe = 14 * 86400;
+                Pi::service('session')->manager()->rememberme($rememberMe);
+                // Unset login session
+                if (isset($_SESSION['PI_LOGIN'])) {
+                    unset($_SESSION['PI_LOGIN']);
+                }
+                // Set user login event
+                $args = array(
+                    'uid' => $uid,
+                    'remember_time' => $rememberMe,
+                );
+                Pi::service('event')->trigger('user_login', $args);
+                // Get user information
+                //$user = Pi::model('user_account')->find($uid)->toArray();
+                $user = Pi::user()->get($uid, array(
+                    'id', 'identity', 'name', 'email'
+                ));
+                // Set return array
+                $return['message'] = __('You have logged in successfully');
+                $return['login'] = 1;
+                $return['identity'] = $user['identity'];
+                $return['email'] = $user['email'];
+                $return['name'] = $user['name'];
+                $return['avatar'] = Pi::service('user')->avatar($user['id'], 'medium', false);
+                $return['uid'] = $user['id'];
+                $return['userid'] = $user['id'];
+                $return['sessionid'] = Pi::service('session')->getId();
+            } else {
+                $return['error'] = 1;
+                $return['message'] = __('Bind error');
+            }
+        } else {
+            $return['error'] = 1;
+            $return['message'] = __('Authentication is not valid');
+        }
+
+        return $return;
     }
 
     protected function verifyResult(Result $result)
