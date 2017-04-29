@@ -32,49 +32,62 @@ class IndexController extends ActionController
 
     public function loginAction()
     {
-        // json output
-        $this->view()->setTemplate(false)->setLayout('layout-content');
-
         // Check if already logged in
         if (Pi::service('user')->hasIdentity()) {
-            $this->getResponse()->setStatusCode(401);
-            $this->terminate(__('You are login before'), '', 'error-denied');
-            $this->view()->setLayout('layout-simple');
-            return;
-        }
-
-
-
-        // Check user login from allowed or not
-        if ($this->config('active_login')) {
-            // Check post array set or not
-            if (!$this->request->isPost()) {
-                $this->getResponse()->setStatusCode(401);
-                $this->terminate(__('Invalid input please try again 1'), '', 'error-denied');
-                $this->view()->setLayout('layout-simple');
-                return;
-            } else {
-                // Get from post
-                $post = $this->request->getPost();
-                $identity = $post['identity'];
-                $credential = $post['credential'];
-                // Do login
-                $return = $this->doLogin($identity, $credential);
-                //Check error
-                if ($return['error'] == 1) {
-                    $this->getResponse()->setStatusCode(401);
-                    $this->terminate($return['message'], '', 'error-denied');
-                    $this->view()->setLayout('layout-simple');
-                    return;
-                }
-            }
+            // Get user
+            $user = Pi::user()->get(Pi::user()->getId(), array(
+                'id', 'identity', 'name', 'email'
+            ));
+            // Set result
+            $return = array(
+                'check' => 1,
+                'uid' => $user['id'],
+                'identity' => $user['identity'],
+                'email' => $user['email'],
+                'name' => $user['name'],
+                'avatar' => Pi::service('user')->avatar($user['id'], 'large', false),
+                'sessionid' => Pi::service('session')->getId(),
+                'message' => __('You are login to system before'),
+            );
         } else {
-            $this->getResponse()->setStatusCode(401);
-            $this->terminate(__('Login is not active'), '', 'error-denied');
-            $this->view()->setLayout('layout-simple');
-            return;
+            // Check user login from allowed or not
+            if ($this->config('active_login')) {
+                // Check post array set or not
+                if (!$this->request->isPost()) {
+                    // Set result
+                    $return = array(
+                        'check' => 0,
+                        'uid' => Pi::user()->getId(),
+                        'identity' => Pi::user()->getIdentity(),
+                        'email' => '',
+                        'name' => '',
+                        'avatar' => '',
+                        'sessionid' => Pi::service('session')->getId(),
+                        'message' => __('Post request not set'),
+                    );
+                } else {
+                    // Get from post
+                    $post = $this->request->getPost();
+                    $identity = $post['identity'];
+                    $credential = $post['credential'];
+                    // Do login
+                    $return = $this->doLogin($identity, $credential);
+                }
+            } else {
+                // Set result
+                $return = array(
+                    'check' => 0,
+                    'uid' => Pi::user()->getId(),
+                    'identity' => Pi::user()->getIdentity(),
+                    'email' => '',
+                    'name' => '',
+                    'avatar' => '',
+                    'sessionid' => Pi::service('session')->getId(),
+                    'message' => __('Login not active'),
+                );
+            }
         }
-        // json output
+
         return $return;
     }
 
@@ -194,6 +207,7 @@ class IndexController extends ActionController
             'userid' => 0,
             'sessionid' => '',
             'error' => 0,
+            'check' => 0
         );
         
         // Set field
@@ -245,6 +259,7 @@ class IndexController extends ActionController
                 $return['uid'] = $user['id'];
                 $return['userid'] = $user['id'];
                 $return['sessionid'] = Pi::service('session')->getId();
+                $return['check'] = 1;
             } else {
                 $return['error'] = 1;
                 $return['message'] = __('Bind error');
