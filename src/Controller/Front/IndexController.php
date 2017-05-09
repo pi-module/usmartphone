@@ -120,7 +120,7 @@ class IndexController extends ActionController
                 $session = Pi::model('session')->find($id);
                 if ($session) {
                     // Old method for pi 2.4.0
-                    /* 
+                    /*
                     session_id($id);
                     Pi::service('session')->manager()->start();
                     */
@@ -157,6 +157,60 @@ class IndexController extends ActionController
                 );
             }
         } else {
+            $this->getResponse()->setStatusCode(401);
+            $this->terminate(__('Login not active'), '', 'error-denied');
+            $this->view()->setLayout('layout-simple');
+            return;
+        }
+        // json output
+        return $return;
+    }
+
+    public function profileAction()
+    {
+        if ($this->config('active_login')) {
+            // Get session id
+            $id = $this->params('id', '');
+            // Check id set or not
+            if (!empty($id)) {
+                // Start session
+                $session = Pi::model('session')->find($id);
+                if ($session) {
+                    // Old method for pi 2.4.0
+                    /*
+                    session_id($id);
+                    Pi::service('session')->manager()->start();
+                    */
+                    // New method for pi 2.5.0
+                    $session = $session->toArray();
+                    Pi::service('session')->manager()->start(false, $session['id']);
+                }
+            }
+            if (Pi::service('user')->hasIdentity()) {
+                $fields = array(
+                    'id', 'identity', 'name', 'email', 'first_name', 'last_name', 'id_number', 'phone', 'mobile',
+                    'address1', 'address2', 'country', 'state', 'city', 'zip_code', 'company', 'company_id', 'company_vat',
+                    'your_gift', 'your_post', 'company_type', 'latitude', 'longitude',
+                );
+                // Find user
+                $uid = Pi::user()->getId();
+                $return = Pi::user()->get($uid, $fields);
+                $return['avatar'] = Pi::service('avatar')->get($return['id'], 'large', false);
+                $return['uid'] = $uid;
+                $return['check'] = 1;
+                $return['sessionid'] = Pi::service('session')->getId();
+            } else {
+                $return = array(
+                    'check' => 0,
+                    'uid' => Pi::user()->getId(),
+                    'identity' => Pi::user()->getIdentity(),
+                    'email' => '',
+                    'name' => '',
+                    'avatar' => '',
+                    'sessionid' => Pi::service('session')->getId(),
+                );
+            }
+        } else {
             // Set empty return
             /* $return = array(
                 'check' => 0,
@@ -176,23 +230,6 @@ class IndexController extends ActionController
         return $return;
     }
 
-    public function profileAction()
-    {
-        if (Pi::service('user')->hasIdentity()) {
-            // Find user
-            $uid = Pi::user()->getId();
-            $user = Pi::user()->get($uid, array('id', 'identity', 'name', 'email'));
-            $user['avatar'] = Pi::service('avatar')->get($user['id'], 'large', false);
-        } else {
-            $this->getResponse()->setStatusCode(401);
-            $this->terminate(__('Please login to get profile info'), '', 'error-denied');
-            $this->view()->setLayout('layout-simple');
-            return;
-        }
-        // json output
-        return $user;
-    }
-
     public function doLogin($identity, $credential)
     {
         // Set return array
@@ -209,7 +246,7 @@ class IndexController extends ActionController
             'error' => 0,
             'check' => 0
         );
-        
+
         // Set field
         $field = 'identity';
         if (Pi::service('module')->isActive('user')) {
